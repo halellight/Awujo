@@ -9,7 +9,7 @@ export function Footer() {
                     <div className="col-span-1 md:col-span-1">
                         <Link href="/" className="flex items-center gap-2 mb-6">
                             <Landmark className="text-primary w-6 h-6" />
-                            <span className="font-heading font-bold text-lg text-foreground tracking-tight uppercase">Àwùjọ<span className="text-primary">NG</span></span>
+                            <span className="font-heading font-bold text-lg text-foreground tracking-tight uppercase">Àwùjọ <span className="text-primary">NG</span></span>
                         </Link>
                         <p className="text-zinc-500 text-[13px] leading-relaxed">
                             Nigeria&apos;s independent platform for tracking governance, budget allocation, and infrastructure implementation. Built for the citizens, by the citizens.

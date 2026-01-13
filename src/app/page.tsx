@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-background">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-40 overflow-hidden border-b border-zinc-200">
+      <section className="relative sm:pt-27 lg:pt-32 md:pt-32 pb-40 overflow-hidden border-b border-zinc-200">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 text-center">
           <motion.div
             initial={{ opacity: 0, y: 10 }}

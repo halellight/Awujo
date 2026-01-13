@@ -24,7 +24,7 @@ export function Navbar() {
                     <div className="flex items-center gap-2">
                         <Link href="/" className="flex items-center gap-2">
                             <Landmark className="text-primary w-6 h-6" />
-                            <span className="font-heading font-bold text-lg text-foreground tracking-tight uppercase">Àwùjọ<span className="text-primary">NG</span></span>
+                            <span className="font-heading font-bold text-lg text-foreground tracking-tight uppercase">Àwùjọ <span className="text-primary">NG</span></span>
                         </Link>
                     </div>
 
