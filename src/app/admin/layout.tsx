@@ -1,0 +1,115 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+    BarChart3,
+    ShieldCheck,
+    FileText,
+    Users2,
+    PenTool,
+    LayoutDashboard,
+    LogOut,
+    Landmark,
+    Shield,
+    MessageSquare
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const sidebarLinks = [
+    { name: "Overview", href: "/admin", icon: LayoutDashboard },
+    { name: "Projects", href: "/admin/projects", icon: ShieldCheck },
+    { name: "Reports", href: "/admin/reports", icon: FileText },
+    { name: "Policies", href: "/admin/policies", icon: Shield },
+    { name: "Petitions", href: "/admin/petitions", icon: PenTool },
+    { name: "Representatives", href: "/admin/representatives", icon: Users2 },
+    { name: "Comments", href: "/admin/comments", icon: MessageSquare },
+];
+
+export default function AdminLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    const pathname = usePathname();
+
+    // Don't show sidebar on login page
+    if (pathname === "/admin/login") {
+        return <>{children}</>;
+    }
+
+    return (
+        <div className="flex min-h-screen bg-zinc-50">
+            {/* Sidebar */}
+            <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-zinc-200 z-50">
+                <div className="p-8 pb-12">
+                    <Link href="/" className="flex items-center gap-2 mb-10">
+                        <Landmark className="text-primary w-6 h-6" />
+                        <span className="font-heading font-bold text-lg text-foreground tracking-tight uppercase">
+                            Admin<span className="text-primary">Ops</span>
+                        </span>
+                    </Link>
+
+                    <nav className="space-y-1">
+                        {sidebarLinks.map((link) => {
+                            const isActive = pathname === link.href;
+                            const Icon = link.icon;
+
+                            return (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    className={cn(
+                                        "flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all group",
+                                        isActive
+                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/10"
+                                            : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+                                    )}
+                                >
+                                    <Icon className={cn("w-4 h-4", isActive ? "text-white" : "text-zinc-400 group-hover:text-primary transition-colors")} />
+                                    {link.name}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="active-pill"
+                                            className="ml-auto w-1 h-4 bg-white rounded-full"
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                        />
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
+
+                <div className="absolute bottom-8 left-0 right-0 px-8">
+                    <Link href="/admin/login">
+                        <button className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-lg bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-colors">
+                            <LogOut className="w-3.5 h-3.5" />
+                            Terminate Session
+                        </button>
+                    </Link>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-grow ml-64 min-h-screen">
+                <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-8 sticky top-0 z-40">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                        Current Operations / <span className="text-zinc-900">{sidebarLinks.find(l => l.href === pathname)?.name || "Dashboard"}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-end">
+                            <span className="text-[10px] font-black uppercase text-zinc-900">Praise Ibec.</span>
+                            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Master Admin</span>
+                        </div>
+                        <div className="w-8 h-8 rounded bg-zinc-100 border border-zinc-200" />
+                    </div>
+                </header>
+                <div className="p-8 md:p-12">
+                    {children}
+                </div>
+            </main>
+        </div>
+    );
+}
