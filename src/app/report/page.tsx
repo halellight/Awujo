@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { ArrowRight, CheckCircle2, AlertCircle, Loader2, Send, Image as ImageIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export default function ReportPage() {
     const [projects, setProjects] = useState<any[]>([]);
