@@ -16,30 +16,51 @@ export default function DashboardPage() {
     const [recentReports, setRecentReports] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [velocityData, setVelocityData] = useState<number[]>([]);
+
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
-            const { data: projects } = await supabase.from('projects').select('*');
-            const { data: reports } = await supabase.from('project_reports').select('*, projects(title)').order('created_at', { ascending: false }).limit(5);
+            try {
+                const { data: projects } = await supabase.from('projects').select('*');
+                const { data: reports } = await supabase.from('project_reports').select('*, projects(title)').order('created_at', { ascending: false }).limit(5);
 
-            if (projects) {
-                const totalProjects = projects.length;
-                const totalBudget = projects.reduce((acc, p) => acc + (p.budget_allocated || 0), 0);
-                const totalSpent = projects.reduce((acc, p) => acc + (p.budget_spent || 0), 0);
-                const stalledProjects = projects.filter(p => p.status === 'Stalled').length;
-                const completedProjects = projects.filter(p => p.status === 'Completed').length;
+                if (projects) {
+                    const totalProjects = projects.length;
+                    const totalBudget = projects.reduce((acc, p) => acc + (p.budget_allocated || 0), 0);
+                    const totalSpent = projects.reduce((acc, p) => acc + (p.budget_spent || 0), 0);
+                    const stalledProjects = projects.filter(p => p.status === 'Stalled').length;
+                    const completedProjects = projects.filter(p => p.status === 'Completed').length;
 
-                setStats({
-                    totalProjects,
-                    totalBudget,
-                    totalSpent,
-                    stalledProjects,
-                    completedProjects,
-                });
+                    setStats({
+                        totalProjects,
+                        totalBudget,
+                        totalSpent,
+                        stalledProjects,
+                        completedProjects,
+                    });
+
+                    // Calculate initiation velocity (projects per month over last 6 months)
+                    const now = new Date();
+                    const velocity = Array(6).fill(0);
+                    projects.forEach(p => {
+                        const date = new Date(p.created_at);
+                        const diffMonths = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
+                        if (diffMonths >= 0 && diffMonths < 6) {
+                            velocity[5 - diffMonths]++;
+                        }
+                    });
+                    // Normalize for visualization (0-100 scale)
+                    const max = Math.max(...velocity, 1) || 1;
+                    setVelocityData(velocity.map(v => (v / max) * 100));
+                }
+
+                if (reports) setRecentReports(reports);
+            } catch (err) {
+                console.error("Dashboard synchronization failure:", err);
+            } finally {
+                setIsLoading(false);
             }
-
-            if (reports) setRecentReports(reports);
-            setIsLoading(false);
         }
         fetchData();
     }, []);
@@ -122,26 +143,26 @@ export default function DashboardPage() {
                                     className="bg-white border border-zinc-200 rounded-xl p-8 md:p-10 shadow-sm"
                                 >
                                     <h3 className="text-xl font-heading font-black uppercase mb-10 flex items-center gap-2 tracking-tight">
-                                        <BarChart3 className="w-5 h-5 text-primary" /> Velocity Matrix
+                                        <BarChart3 className="w-5 h-5 text-primary" /> Initiation Velocity
                                     </h3>
-                                    <div className="h-64 flex items-end gap-3 px-2">
-                                        {[40, 70, 45, 90, 65, 80, 50, 85, 60, 95].map((h, i) => (
+                                    <div className="h-48 md:h-64 flex items-end gap-2 md:gap-3 px-2">
+                                        {velocityData.map((h, i) => (
                                             <motion.div
                                                 key={i}
                                                 initial={{ height: 0 }}
-                                                animate={{ height: `${h}%` }}
+                                                animate={{ height: `${Math.max(h, 5)}%` }}
                                                 transition={{ delay: 0.5 + (i * 0.05), duration: 0.8, ease: "easeOut" }}
-                                                className="flex-grow bg-zinc-100 rounded-t-lg hover:bg-primary transition-all cursor-help group relative"
+                                                className="flex-grow bg-zinc-100 rounded-t-lg hover:bg-primary transition-all cursor-help group relative min-w-[20px]"
                                             >
                                                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[10px] py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black uppercase shadow-xl z-10 border border-white/10">
-                                                    Month {i + 1}: {h}%
+                                                    Month -{5 - i}: {Math.round((h / 100) * (stats.totalProjects || 10))} Projects
                                                 </div>
                                             </motion.div>
                                         ))}
                                     </div>
                                     <div className="flex justify-between mt-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest px-2">
-                                        <span>Federal Cycle Q1</span>
-                                        <span>Federal Cycle Q4</span>
+                                        <span>6 Months Ago</span>
+                                        <span>Current Cycle</span>
                                     </div>
                                 </motion.div>
 

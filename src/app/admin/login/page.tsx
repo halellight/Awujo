@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Landmark, Shield, ArrowRight, Loader2, Lock } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -12,14 +14,30 @@ export default function AdminLoginPage() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulation of login
-        setTimeout(() => {
-            router.push("/admin");
+
+        try {
+            const { error, data } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+
+            if (data.user) {
+                toast.success("Intelligence établi. Accès autorisé.");
+                router.push("/admin");
+            }
+        } catch (err) {
+            toast.error("Critical failure during uplink sequence.");
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     return (

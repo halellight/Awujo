@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "A digital platform for tracking Nigerian budget performance, project implementation, and policy changes.",
 };
 
+import { AuthProvider } from "@/lib/auth-context";
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,15 +32,18 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${outfit.variable} antialiased font-sans flex flex-col min-h-screen`}
       >
-        <div className="gov-banner">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-primary" />
-          Official platform for citizen transparency
-        </div>
-        <Navbar />
-        <main className="flex-grow pt-[108px]">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Toaster position="top-right" expand={false} richColors />
+          <div className="gov-banner">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-primary" />
+            Official platform for citizen transparency
+          </div>
+          <Navbar />
+          <main className="flex-grow pt-[108px]">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

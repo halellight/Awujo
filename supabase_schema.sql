@@ -64,6 +64,16 @@ CREATE TABLE IF NOT EXISTS public.petitions (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 4a. Function to safely increment signatures
+CREATE OR REPLACE FUNCTION increment_petition_signatures(petition_id UUID)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE public.petitions
+    SET current_signatures = current_signatures + 1
+    WHERE id = petition_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- 5. Representatives Table
 CREATE TABLE IF NOT EXISTS public.representatives (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -85,9 +95,13 @@ ALTER TABLE public.representatives ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read petitions" ON public.petitions FOR SELECT USING (true);
 CREATE POLICY "Allow public read representatives" ON public.representatives FOR SELECT USING (true);
 
+-- Policies for public interaction
+CREATE POLICY "Allow public insert petitions" ON public.petitions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public sign petitions" ON public.petitions FOR UPDATE USING (true) WITH CHECK (true);
+
 -- Admin policies
-CREATE POLICY "Allow admin all access petitions" ON public.petitions FOR ALL USING (auth.uid() IN (SELECT auth.uid() FROM auth.users WHERE email = 'praiseibec@gmail.com'));
-CREATE POLICY "Allow admin all access representatives" ON public.representatives FOR ALL USING (auth.uid() IN (SELECT auth.uid() FROM auth.users WHERE email = 'praiseibec@gmail.com'));
+CREATE POLICY "Allow admin all access petitions" ON public.petitions FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');
+CREATE POLICY "Allow admin all access representatives" ON public.representatives FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');
 
 -- 6. Project Updates (for pictures and timeline)
 CREATE TABLE IF NOT EXISTS public.project_updates (

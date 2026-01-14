@@ -28,13 +28,13 @@ export default function AdminDashboard() {
         async function fetchData() {
             setIsLoading(true);
             const [reports, projects, petitions] = await Promise.all([
-                supabase.from('project_reports').select('*').eq('status', 'Pending'),
+                supabase.from('project_reports').select('*, projects(title)').order('created_at', { ascending: false }),
                 supabase.from('projects').select('*'),
                 supabase.from('petitions').select('*').eq('status', 'Open'),
             ]);
 
             setStats({
-                pendingReports: reports.data?.length || 0,
+                pendingReports: reports.data?.filter(r => r.status === 'Pending').length || 0,
                 activeProjects: projects.data?.length || 0,
                 openPetitions: petitions.data?.length || 0,
                 recentSubmissions: reports.data?.slice(0, 5) || [],

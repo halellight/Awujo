@@ -27,17 +27,41 @@ const sidebarLinks = [
     { name: "Comments", href: "/admin/comments", icon: MessageSquare },
 ];
 
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const { user, isLoading } = useAuth();
+
+    useEffect(() => {
+        if (!isLoading && !user && pathname !== "/admin/login") {
+            router.push("/admin/login");
+        }
+    }, [user, isLoading, pathname, router]);
 
     // Don't show sidebar on login page
     if (pathname === "/admin/login") {
         return <>{children}</>;
     }
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center p-12 gap-4">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Verifying Administrative Clearance...</span>
+            </div>
+        );
+    }
+
+    if (!user) return null;
 
     return (
         <div className="flex min-h-screen bg-zinc-50">

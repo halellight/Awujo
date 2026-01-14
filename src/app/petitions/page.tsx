@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { PenTool, Users, ArrowUpRight, TrendingUp, Clock, CheckCircle, X, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function PetitionsPage() {
     const [petitions, setPetitions] = useState<any[]>([]);
@@ -26,18 +27,18 @@ export default function PetitionsPage() {
         setIsLoading(false);
     }
 
-    async function handleSign(id: string, current: number) {
-        setPetitions(prev => prev.map(p => p.id === id ? { ...p, current_signatures: p.current_signatures + 1, isSigning: true } : p));
+    async function handleSign(id: string) {
+        setPetitions(prev => prev.map(p => p.id === id ? { ...p, isSigning: true } : p));
 
-        await supabase
-            .from('petitions')
-            .update({ current_signatures: current + 1 })
-            .eq('id', id);
+        const { error } = await supabase.rpc('increment_petition_signatures', { petition_id: id });
 
-        // Give a small delay for the effect
-        setTimeout(() => {
-            setPetitions(prev => prev.map(p => p.id === id ? { ...p, isSigning: false, hasSigned: true } : p));
-        }, 1000);
+        if (error) {
+            toast.error("Transmission failed. Sovereignty pulse interrupted.");
+            setPetitions(prev => prev.map(p => p.id === id ? { ...p, isSigning: false } : p));
+        } else {
+            setPetitions(prev => prev.map(p => p.id === id ? { ...p, current_signatures: p.current_signatures + 1, isSigning: false, hasSigned: true } : p));
+            toast.success("Signature transmitted to the federation.");
+        }
     }
 
     async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
@@ -56,7 +57,10 @@ export default function PetitionsPage() {
 
         const { error } = await supabase.from('petitions').insert([petitionData]);
 
-        if (!error) {
+        if (error) {
+            toast.error("Failed to initiate collective action.");
+        } else {
+            toast.success("New movement initiated. Pulse active.");
             await fetchPetitions();
             setIsModalOpen(false);
         }
@@ -112,7 +116,7 @@ export default function PetitionsPage() {
                             </div>
                         ) : (
                             petitions.map((petition, idx) => (
-                                <PetitionCard key={petition.id} petition={petition} idx={idx} onSign={() => handleSign(petition.id, petition.current_signatures)} />
+                                <PetitionCard key={petition.id} petition={petition} idx={idx} onSign={() => handleSign(petition.id)} />
                             ))
                         )}
                     </div>
