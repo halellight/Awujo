@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Menu, X, Landmark } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
     { name: "Live Dashboard", href: "/dashboard" },
@@ -15,6 +16,7 @@ const navLinks = [
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
 
     return (
         <nav className="fixed top-[27px] w-full z-50 bg-background/95 backdrop-blur-sm border-b border-zinc-200 transition-all">
@@ -31,15 +33,19 @@ export function Navbar() {
                     {/* Desktop Nav */}
                     <div className="hidden md:flex items-center gap-10">
 
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className="text-xs font-bold uppercase tracking-widest text-zinc-600 hover:text-primary transition-colors"
-                            >
-                                {link.name}
-                            </Link>
-                        ))}
+                        {navLinks.map((link) => {
+                            const isActive = pathname.startsWith(link.href);
+                            return (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    className={`text-xs font-bold uppercase tracking-widest transition-colors ${isActive ? "text-primary" : "text-zinc-600 hover:text-primary"
+                                        }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            );
+                        })}
                         <Link href="/report" className="border-l border-zinc-200 pl-10">
                             <button className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-sm transition-all active:scale-95">
                                 Submit Report
@@ -63,16 +69,20 @@ export function Navbar() {
             {isOpen && (
                 <div className="md:hidden bg-background border-b border-zinc-200 py-6 animate-in slide-in-from-top-4 duration-200">
                     <div className="px-6 space-y-4">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                onClick={() => setIsOpen(false)}
-                                className="block text-xs font-black uppercase tracking-widest text-zinc-600 hover:text-primary"
-                            >
-                                {link.name}
-                            </Link>
-                        ))}
+                        {navLinks.map((link) => {
+                            const isActive = pathname.startsWith(link.href);
+                            return (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`block text-xs font-black uppercase tracking-widest transition-colors ${isActive ? "text-primary" : "text-zinc-600 hover:text-primary"
+                                        }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            );
+                        })}
                         <Link href="/report" className="block pt-4">
                             <button className="w-full bg-primary text-primary-foreground px-4 py-3 rounded-lg text-xs font-black uppercase tracking-widest">
                                 Submit Report
