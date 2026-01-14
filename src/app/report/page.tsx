@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { ArrowRight, CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
+import { ArrowRight, CheckCircle2, AlertCircle, Loader2, Send, Image as ImageIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ReportPage() {
@@ -17,6 +17,9 @@ export default function ReportPage() {
         report_content: "",
         evidence_url: "",
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         async function fetchProjects() {
@@ -35,14 +38,39 @@ export default function ReportPage() {
         setIsSubmitting(true);
         setStatus('idle');
 
+        let finalEvidenceUrl = formData.evidence_url;
+
+        // 1. Handle Image Upload if file exists
+        if (imageFile) {
+            const fileExt = imageFile.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).slice(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `entries/${fileName}`;
+
+            const { error: uploadError, data } = await supabase.storage
+                .from('reports')
+                .upload(filePath, imageFile);
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                toast.error("Evidence upload failed. Proceeding without image.");
+            } else {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('reports')
+                    .getPublicUrl(filePath);
+                finalEvidenceUrl = publicUrl;
+            }
+        }
+
+        const submissionData = {
+            ...formData,
+            evidence_url: finalEvidenceUrl,
+            project_id: formData.project_id || null,
+            status: 'Pending'
+        };
+
         const { error } = await supabase
             .from('project_reports')
-            .insert([
-                {
-                    ...formData,
-                    status: 'Pending'
-                }
-            ]);
+            .insert([submissionData]);
 
         if (error) {
             console.error('Error submitting report:', error);
@@ -173,16 +201,75 @@ export default function ReportPage() {
                                         />
                                     </div>
 
-                                    {/* Evidence URL */}
-                                    <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Evidence URL (Photos/Documents)</label>
-                                        <input
-                                            type="url"
-                                            placeholder="https://drive.google.com/..."
-                                            value={formData.evidence_url}
-                                            onChange={(e) => setFormData({ ...formData, evidence_url: e.target.value })}
-                                            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                        />
+                                    {/* Evidence Upload / URL */}
+                                    <div className="md:col-span-2 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Media Evidence (Photos)</label>
+                                            <span className="text-[9px] font-bold text-zinc-300 uppercase italic">Direct Upload preferred</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* File Upload */}
+                                            <label className="relative group cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            setImageFile(file);
+                                                            setImagePreview(URL.createObjectURL(file));
+                                                        }
+                                                    }}
+                                                />
+                                                <div className="flex items-center gap-4 p-4 bg-zinc-50 border border-zinc-200 border-dashed rounded-lg group-hover:bg-zinc-100 group-hover:border-primary/30 transition-all h-full">
+                                                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-zinc-200 shadow-sm">
+                                                        <ImageIcon className="w-5 h-5 text-zinc-400 group-hover:text-primary transition-colors" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Select Image</div>
+                                                        <div className="text-[9px] font-bold text-zinc-300 uppercase">Gallery or Camera</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+
+                                            {/* URL Fallback */}
+                                            <div className="relative">
+                                                <input
+                                                    type="url"
+                                                    disabled={!!imageFile}
+                                                    placeholder="Or paste Evidence Link..."
+                                                    value={formData.evidence_url}
+                                                    onChange={(e) => setFormData({ ...formData, evidence_url: e.target.value })}
+                                                    className="w-full h-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:opacity-50"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Preview Area */}
+                                        <AnimatePresence>
+                                            {imagePreview && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    className="relative mt-4 group w-fit"
+                                                >
+                                                    <img src={imagePreview} className="w-40 h-40 object-cover rounded-xl border-4 border-white shadow-xl" alt="Preview" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setImageFile(null);
+                                                            setImagePreview(null);
+                                                        }}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg hover:scale-110 transition-all"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
                                     {/* Report Content */}

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CheckCircle2, XCircle, Clock, ExternalLink, ShieldAlert, Eye, EyeOff, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, ExternalLink, ShieldAlert, Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function AdminReportsPage() {
     const [reports, setReports] = useState<any[]>([]);
@@ -26,8 +27,53 @@ export default function AdminReportsPage() {
 
     async function updateReportStatus(id: string, status: string) {
         setActioningId(id);
-        await supabase.from('project_reports').update({ status }).eq('id', id);
-        await fetchReports();
+        const { error } = await supabase.from('project_reports').update({ status }).eq('id', id);
+        if (error) {
+            toast.error("Status update failed");
+        } else {
+            toast.success(`Report ${status}`);
+            await fetchReports();
+        }
+        setActioningId(null);
+    }
+
+    async function deleteReport(id: string, evidenceUrl?: string) {
+        if (!confirm("Are you sure you want to PERMANENTLY purge this report and its media?")) return;
+
+        setActioningId(id);
+
+        // 1. Delete Media if it exists in Supabase Storage
+        if (evidenceUrl && evidenceUrl.includes('storage/v1/object/public/reports/')) {
+            try {
+                // Extract the path from the URL
+                // Format: https://.../storage/v1/object/public/reports/entries/filename.ext
+                const pathParts = evidenceUrl.split('/reports/');
+                if (pathParts.length > 1) {
+                    const storagePath = pathParts[1];
+                    const { error: storageError } = await supabase.storage
+                        .from('reports')
+                        .remove([storagePath]);
+
+                    if (storageError) console.error("Media deletion error:", storageError);
+                }
+            } catch (e) {
+                console.error("Path extraction failed:", e);
+            }
+        }
+
+        // 2. Delete Database Record
+        const { error } = await supabase
+            .from('project_reports')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            toast.error("Deletion failed");
+        } else {
+            toast.success("Report purged successfully");
+            await fetchReports();
+        }
+
         setActioningId(null);
     }
 
@@ -59,7 +105,7 @@ export default function AdminReportsPage() {
                                     </div>
                                     <div className={cn(
                                         "px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border",
-                                        report.status === 'Approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                        report.status === 'Published' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                             report.status === 'Rejected' ? "bg-red-50 text-red-600 border-red-100" :
                                                 "bg-amber-50 text-amber-600 border-amber-100"
                                     )}>
@@ -90,12 +136,12 @@ export default function AdminReportsPage() {
 
                             <div className="bg-zinc-50 border-t md:border-t-0 md:border-l border-zinc-200 p-6 flex flex-row md:flex-col justify-center gap-3 w-full md:w-56">
                                 <button
-                                    disabled={actioningId === report.id || report.status === 'Approved'}
-                                    onClick={() => updateReportStatus(report.id, 'Approved')}
+                                    disabled={actioningId === report.id || report.status === 'Published'}
+                                    onClick={() => updateReportStatus(report.id, 'Published')}
                                     className="flex-grow flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-lg shadow-emerald-600/10"
                                 >
                                     {actioningId === report.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                                    Authorize
+                                    Publish
                                 </button>
                                 <button
                                     disabled={actioningId === report.id || report.status === 'Rejected'}
@@ -104,6 +150,14 @@ export default function AdminReportsPage() {
                                 >
                                     {actioningId === report.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
                                     Reject
+                                </button>
+                                <button
+                                    disabled={actioningId === report.id}
+                                    onClick={() => deleteReport(report.id, report.evidence_url)}
+                                    className="flex-grow flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-100 px-4 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-100 disabled:opacity-50 transition-all shadow-sm"
+                                >
+                                    {actioningId === report.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                                    Purge
                                 </button>
                             </div>
                         </div>

@@ -1,0 +1,8 @@
+{
+  "scanResults": [],
+  "errors": [
+    "Table Scan Error: Could not find the table 'public.pg_catalog.pg_tables' in the schema cache",
+    "View Scan Error: Could not find the table 'public.pg_catalog.pg_views' in the schema cache",
+    "Info Schema Error: Could not find the table 'public.information_schema.tables' in the schema cache"
+  ]
+}

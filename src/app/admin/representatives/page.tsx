@@ -1,16 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Check, Loader2, Users2, Mail, Phone, Edit2, Trash2, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminRepsPage() {
+    return (
+        <Suspense fallback={<div className="animate-pulse text-[10px] font-black uppercase tracking-widest text-zinc-400">Loading Pipeline...</div>}>
+            <AdminRepsContent />
+        </Suspense>
+    );
+}
+
+function AdminRepsContent() {
     const [reps, setReps] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRep, setEditingRep] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const searchParams = useSearchParams();
+    const editId = searchParams.get('edit');
 
     useEffect(() => {
         fetchReps();
@@ -19,7 +31,17 @@ export default function AdminRepsPage() {
     async function fetchReps() {
         setIsLoading(true);
         const { data } = await supabase.from('representatives').select('*').order('name', { ascending: true });
-        if (data) setReps(data);
+        if (data) {
+            setReps(data);
+            // Handle direct edit link
+            if (editId) {
+                const repToEdit = data.find(r => r.id === editId);
+                if (repToEdit) {
+                    setEditingRep(repToEdit);
+                    setIsModalOpen(true);
+                }
+            }
+        }
         setIsLoading(false);
     }
 
@@ -33,20 +55,47 @@ export default function AdminRepsPage() {
             constituency: formData.get('constituency') as string,
             state: formData.get('state') as string,
             party: formData.get('party') as string,
-            email: formData.get('email') as string,
+            contact_email: formData.get('email') as string,
             phone: formData.get('phone') as string,
+            bill_sponsorships: parseInt(formData.get('bill_sponsorships') as string) || 0,
+            committee_attendance: formData.get('committee_attendance') as string,
+            citizen_engagement: formData.get('citizen_engagement') as string,
+            assumed_office: formData.get('assumed_office') as string,
+            legislative_priority: formData.get('legislative_priority') as string,
         };
 
+        let error;
         if (editingRep) {
-            await supabase.from('representatives').update(repData).eq('id', editingRep.id);
+            const { error: updateError } = await supabase.from('representatives').update(repData).eq('id', editingRep.id);
+            error = updateError;
         } else {
-            await supabase.from('representatives').insert([repData]);
+            const { error: insertError } = await supabase.from('representatives').insert([repData]);
+            error = insertError;
         }
 
-        await fetchReps();
-        setIsModalOpen(false);
-        setEditingRep(null);
+        if (error) {
+            console.error("Representative operation failed. Full error context:", JSON.stringify(error, null, 2));
+            toast.error(`Operation failed: ${error.message}. Check console for technical details.`);
+        } else {
+            toast.success(editingRep ? "Profile updated" : "Lawmaker enrolled");
+            await fetchReps();
+            setIsModalOpen(true); // Keep open if you want? No, close it.
+            setIsModalOpen(false);
+            setEditingRep(null);
+        }
         setIsSubmitting(false);
+    }
+
+    async function deleteRep(id: string) {
+        if (confirm("Delete this representative from the directory?")) {
+            const { error } = await supabase.from('representatives').delete().eq('id', id);
+            if (error) {
+                toast.error(`Delete failed: ${error.message}`);
+            } else {
+                toast.success("Profile removed");
+                await fetchReps();
+            }
+        }
     }
 
     return (
@@ -105,6 +154,9 @@ export default function AdminRepsPage() {
                                             <button onClick={() => { setEditingRep(rep); setIsModalOpen(true); }} className="p-2 bg-white border border-zinc-200 rounded text-zinc-600 hover:text-primary transition-all">
                                                 <Edit2 className="w-3.5 h-3.5" />
                                             </button>
+                                            <button onClick={() => deleteRep(rep.id)} className="p-2 bg-white border border-zinc-200 rounded text-zinc-600 hover:text-red-500 transition-all">
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -161,12 +213,37 @@ export default function AdminRepsPage() {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Contact Email</label>
-                                        <input required type="email" name="email" defaultValue={editingRep?.email} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                                        <input required type="email" name="email" defaultValue={editingRep?.contact_email} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Direct Pipeline (Phone)</label>
                                         <input required name="phone" defaultValue={editingRep?.phone} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Bill Sponsorships</label>
+                                        <input type="number" name="bill_sponsorships" defaultValue={editingRep?.bill_sponsorships || 0} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Committee Attendance</label>
+                                        <input name="committee_attendance" defaultValue={editingRep?.committee_attendance || '0%'} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Citizen Engagement</label>
+                                        <input name="citizen_engagement" defaultValue={editingRep?.citizen_engagement || '0/10'} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Assumed Office</label>
+                                        <input name="assumed_office" defaultValue={editingRep?.assumed_office || 'June 2023'} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                                    </div>
+
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Legislative Priority</label>
+                                        <textarea name="legislative_priority" rows={3} defaultValue={editingRep?.legislative_priority} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none" />
                                     </div>
                                 </div>
 

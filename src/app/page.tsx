@@ -82,7 +82,7 @@ export default function Home() {
             className="grid grid-cols-2 md:grid-cols-4 gap-12 mt-32 pt-12 border-t border-zinc-100"
           >
             <StatItem label="Budget Performance" value="₦2.4T" />
-            <StatItem label="Verified Projects" value="1,240" />
+            <StatItem label="Verified Projects" value="12" />
             <StatItem label="Submitters" value="85k" />
             <StatItem label="Policy Shifts" value="42" />
           </motion.div>
@@ -164,10 +164,14 @@ export default function Home() {
   );
 }
 
+import { Counter } from "@/components/counter";
+
 function StatItem({ label, value }: { label: string; value: string }) {
   return (
-    <motion.div variants={item} className="flex flex-col items-center md:items-start">
-      <span className="text-4xl font-heading font-black text-foreground mb-2 tracking-tighter uppercase">{value}</span>
+    <motion.div variants={item} className="flex flex-col items-center md:items-start text-center md:text-left">
+      <span className="text-4xl font-heading font-black text-foreground mb-2 tracking-tighter uppercase whitespace-nowrap">
+        <Counter value={value} />
+      </span>
       <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{label}</span>
     </motion.div>
   );

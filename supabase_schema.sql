@@ -49,9 +49,11 @@ CREATE POLICY "Allow public read policies" ON public.policies FOR SELECT USING (
 
 -- Policy for public submission of reports
 CREATE POLICY "Allow public submission" ON public.project_reports FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow admin all access reports" ON public.project_reports FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');
+CREATE POLICY "Allow admin all access projects" ON public.projects FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');
+-- ADDED: Admin policy for policies table
+CREATE POLICY "Allow admin all access policies" ON public.policies FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');
 
--- Admin policies (You will need to be authenticated as admin to use these)
--- For now, these are placeholders. In a real scenario, we'd check auth.role() or a custom claim.
 -- 4. Petitions Table
 CREATE TABLE IF NOT EXISTS public.petitions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -60,12 +62,12 @@ CREATE TABLE IF NOT EXISTS public.petitions (
     target_authority TEXT,
     expected_signatures INTEGER DEFAULT 1000,
     current_signatures INTEGER DEFAULT 0,
-    status TEXT DEFAULT 'Open' CHECK (status IN ('Open', 'Closed', 'Under Review', 'Resolved')),
+    status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'Open', 'Closed', 'Under Review', 'Resolved')),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 4a. Function to safely increment signatures
-CREATE OR REPLACE FUNCTION increment_petition_signatures(petition_id UUID)
+CREATE OR REPLACE FUNCTION public.increment_petition_signatures(petition_id UUID)
 RETURNS VOID AS $$
 BEGIN
     UPDATE public.petitions
@@ -84,6 +86,7 @@ CREATE TABLE IF NOT EXISTS public.representatives (
     party TEXT,
     image_url TEXT,
     contact_email TEXT,
+    phone TEXT, -- ADDED: phone column
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -134,5 +137,5 @@ CREATE POLICY "Allow public read comments" ON public.project_comments FOR SELECT
 CREATE POLICY "Allow public post comments" ON public.project_comments FOR INSERT WITH CHECK (true);
 
 -- Admin access
-CREATE POLICY "Allow admin all access updates" ON public.project_updates FOR ALL USING (auth.uid() IN (SELECT auth.uid() FROM auth.users WHERE email = 'praiseibec@gmail.com'));
-CREATE POLICY "Allow admin all access comments" ON public.project_comments FOR ALL USING (auth.uid() IN (SELECT auth.uid() FROM auth.users WHERE email = 'praiseibec@gmail.com'));
+CREATE POLICY "Allow admin all access updates" ON public.project_updates FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');
+CREATE POLICY "Allow admin all access comments" ON public.project_comments FOR ALL USING (auth.jwt() ->> 'email' = 'praiseibec@gmail.com');

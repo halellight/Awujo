@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { PenTool, Users, ArrowUpRight, TrendingUp, Clock, CheckCircle, X, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function PetitionsPage() {
     const [petitions, setPetitions] = useState<any[]>([]);
@@ -21,6 +22,7 @@ export default function PetitionsPage() {
         const { data } = await supabase
             .from('petitions')
             .select('*')
+            .eq('status', 'Open')
             .order('current_signatures', { ascending: false });
 
         if (data) setPetitions(data);
@@ -29,6 +31,9 @@ export default function PetitionsPage() {
 
     async function handleSign(id: string) {
         setPetitions(prev => prev.map(p => p.id === id ? { ...p, isSigning: true } : p));
+
+        const petition = petitions.find(p => p.id === id);
+        if (!petition) return;
 
         const { error } = await supabase.rpc('increment_petition_signatures', { petition_id: id });
 
@@ -52,15 +57,16 @@ export default function PetitionsPage() {
             target_authority: formData.get('target_authority') as string,
             expected_signatures: Number(formData.get('expected_signatures')),
             current_signatures: 1,
-            status: 'Open'
+            status: 'Pending'
         };
 
         const { error } = await supabase.from('petitions').insert([petitionData]);
 
         if (error) {
-            toast.error("Failed to initiate collective action.");
+            console.error("Petition Creation Detailed Error:", JSON.stringify(error, null, 2));
+            toast.error(`Submission failed: ${error.message || "Collective action blocked."}`);
         } else {
-            toast.success("New movement initiated. Pulse active.");
+            toast.success("Movement initiated. Awaiting federation review.");
             await fetchPetitions();
             setIsModalOpen(false);
         }
@@ -128,7 +134,7 @@ export default function PetitionsPage() {
                             animate={{ opacity: 1, x: 0 }}
                             className="bg-zinc-900 text-white rounded-xl p-8 shadow-2xl"
                         >
-                            <h3 className="text-lg font-heading font-black uppercase mb-8 flex items-center gap-2">
+                            <h3 className="text-lg font-heading font-black text-zinc-400 uppercase mb-8 flex items-center gap-2">
                                 <TrendingUp className="w-4 h-4 text-primary" /> Impact Matrix
                             </h3>
                             <div className="space-y-6">
@@ -279,20 +285,24 @@ function PetitionCard({ petition, idx, onSign }: { petition: any, idx: number, o
                             <>Sign Petition <PenTool className="w-3 h-3" /></>
                         )}
                     </button>
-                    <button className="px-8 border border-zinc-200 py-5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors flex items-center justify-center gap-2">
+                    <Link href={`/petitions/${petition.id}`} className="px-8 border border-zinc-200 py-5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors flex items-center justify-center gap-2">
                         View Protocol <ArrowUpRight className="w-3 h-3" />
-                    </button>
+                    </Link>
                 </div>
             </div>
         </motion.div>
     );
 }
 
+import { Counter } from "@/components/counter";
+
 function StatRow({ label, value, color }: { label: string, value: string, color: string }) {
     return (
         <div className="flex justify-between items-end">
             <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">{label}</span>
-            <span className={`text-3xl font-heading font-black uppercase ${color} leading-none`}>{value}</span>
+            <span className={`text-3xl font-heading font-black uppercase ${color} leading-none`}>
+                <Counter value={value} />
+            </span>
         </div>
     );
 }

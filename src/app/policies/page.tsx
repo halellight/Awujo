@@ -3,12 +3,24 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Calendar, ExternalLink, Search, Filter, Shield } from "lucide-react";
+import { BookOpen, Calendar, ExternalLink, Search, Filter, Shield, FileText } from "lucide-react";
+import Link from "next/link";
 
 export default function PoliciesPage() {
     const [policies, setPolicies] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.email === 'praiseibec@gmail.com') {
+                setIsAdmin(true);
+            }
+        };
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         async function fetchPolicies() {
@@ -38,10 +50,20 @@ export default function PoliciesPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8"
                     >
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
-                        Legislative & Executive Intelligence
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+                            Legislative & Executive Intelligence
+                        </div>
+                        {isAdmin && (
+                            <Link
+                                href="/admin/policies"
+                                className="px-5 py-3 bg-zinc-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition-all shadow-xl"
+                            >
+                                <BookOpen className="w-3.5 h-3.5" /> Manage Policy Archive
+                            </Link>
+                        )}
                     </motion.div>
                     <h1 className="text-4xl md:text-6xl font-heading font-black text-foreground tracking-tight uppercase mb-4 leading-none">
                         Policy <span className="text-primary italic">Desk.</span>
@@ -71,11 +93,11 @@ export default function PoliciesPage() {
                 </div>
 
                 {/* Policies List */}
-                <AnimatePresence mode="popLayout">
+                <div>
                     {filteredPolicies.length === 0 && !isLoading ? (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             className="bg-white border border-zinc-200 rounded-xl p-20 text-center"
                         >
                             <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -87,28 +109,24 @@ export default function PoliciesPage() {
                             </p>
                         </motion.div>
                     ) : (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="grid grid-cols-1 gap-6"
-                        >
+                        <div className="grid grid-cols-1 gap-6">
                             {filteredPolicies.map((policy, idx) => (
-                                <PolicyCard key={policy.id} policy={policy} idx={idx} />
+                                <PolicyCard key={policy.id} policy={policy} idx={idx} isAdmin={isAdmin} />
                             ))}
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
+                </div>
             </div>
         </div>
     );
 }
 
-function PolicyCard({ policy, idx }: { policy: any, idx: number }) {
+function PolicyCard({ policy, idx, isAdmin }: { policy: any, idx: number, isAdmin: boolean }) {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.05 }}
+            transition={{ delay: Math.min(idx * 0.05, 0.5) }}
             className="group bg-white border border-zinc-200 rounded-xl p-6 md:p-8 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
         >
             <div className="flex flex-col md:flex-row justify-between items-start gap-6">
@@ -132,7 +150,7 @@ function PolicyCard({ policy, idx }: { policy: any, idx: number }) {
                     </p>
                 </div>
 
-                <div className="flex-shrink-0 w-full md:w-auto">
+                <div className="flex-shrink-0 w-full md:w-auto flex flex-col gap-3">
                     <a
                         href={policy.official_url}
                         target="_blank"
@@ -141,6 +159,14 @@ function PolicyCard({ policy, idx }: { policy: any, idx: number }) {
                     >
                         Digital Gazette <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                     </a>
+                    {isAdmin && (
+                        <Link
+                            href={`/admin/policies?edit=${policy.id}`}
+                            className="flex items-center justify-center gap-3 bg-zinc-900 text-white border border-zinc-900 px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-primary hover:border-primary transition-all group/btn w-full md:w-auto shadow-lg shadow-black/10"
+                        >
+                            <FileText className="w-3.5 h-3.5" /> Modify Directive
+                        </Link>
+                    )}
                 </div>
             </div>
         </motion.div>

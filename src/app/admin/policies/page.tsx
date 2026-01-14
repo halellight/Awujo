@@ -1,16 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Check, Loader2, FileText, Globe, Calendar, Edit2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminPoliciesPage() {
+    return (
+        <Suspense fallback={<div className="animate-pulse text-[10px] font-black uppercase tracking-widest text-zinc-400">Loading Archive...</div>}>
+            <AdminPoliciesContent />
+        </Suspense>
+    );
+}
+
+function AdminPoliciesContent() {
     const [policies, setPolicies] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPolicy, setEditingPolicy] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const searchParams = useSearchParams();
+    const editId = searchParams.get('edit');
 
     useEffect(() => {
         fetchPolicies();
@@ -19,7 +31,17 @@ export default function AdminPoliciesPage() {
     async function fetchPolicies() {
         setIsLoading(true);
         const { data } = await supabase.from('policies').select('*').order('published_date', { ascending: false });
-        if (data) setPolicies(data);
+        if (data) {
+            setPolicies(data);
+            // Handle direct edit link
+            if (editId) {
+                const policyToEdit = data.find(p => p.id === editId);
+                if (policyToEdit) {
+                    setEditingPolicy(policyToEdit);
+                    setIsModalOpen(true);
+                }
+            }
+        }
         setIsLoading(false);
     }
 
@@ -35,22 +57,36 @@ export default function AdminPoliciesPage() {
             published_date: formData.get('published_date') as string,
         };
 
+        let error;
         if (editingPolicy) {
-            await supabase.from('policies').update(policyData).eq('id', editingPolicy.id);
+            const { error: updateError } = await supabase.from('policies').update(policyData).eq('id', editingPolicy.id);
+            error = updateError;
         } else {
-            await supabase.from('policies').insert([policyData]);
+            const { error: insertError } = await supabase.from('policies').insert([policyData]);
+            error = insertError;
         }
 
-        await fetchPolicies();
-        setIsModalOpen(false);
-        setEditingPolicy(null);
+        if (error) {
+            console.error("Policy operation failed:", error);
+            toast.error(`Operation failed: ${error.message}`);
+        } else {
+            toast.success(editingPolicy ? "Policy updated" : "Policy archived");
+            await fetchPolicies();
+            setIsModalOpen(false);
+            setEditingPolicy(null);
+        }
         setIsSubmitting(false);
     }
 
     async function deletePolicy(id: string) {
         if (confirm("Delete this policy from the archive?")) {
-            await supabase.from('policies').delete().eq('id', id);
-            await fetchPolicies();
+            const { error } = await supabase.from('policies').delete().eq('id', id);
+            if (error) {
+                toast.error(`Delete failed: ${error.message}`);
+            } else {
+                toast.success("Policy removed");
+                await fetchPolicies();
+            }
         }
     }
 

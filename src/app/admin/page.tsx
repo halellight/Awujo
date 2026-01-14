@@ -33,6 +33,10 @@ export default function AdminDashboard() {
                 supabase.from('petitions').select('*').eq('status', 'Open'),
             ]);
 
+            if (reports.error) console.error("Admin: Error fetching reports:", reports.error.message);
+            if (projects.error) console.error("Admin: Error fetching projects:", projects.error.message);
+            if (petitions.error) console.error("Admin: Error fetching petitions:", petitions.error.message);
+
             setStats({
                 pendingReports: reports.data?.filter(r => r.status === 'Pending').length || 0,
                 activeProjects: projects.data?.length || 0,

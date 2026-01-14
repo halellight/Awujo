@@ -85,7 +85,8 @@ export default function AdminPetitionsPage() {
                                             "px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border",
                                             petition.status === 'Open' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                                 petition.status === 'Won' ? "bg-blue-50 text-blue-600 border-blue-100" :
-                                                    "bg-zinc-100 text-zinc-500 border-zinc-200"
+                                                    petition.status === 'Pending' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                                        "bg-zinc-100 text-zinc-500 border-zinc-200"
                                         )}>
                                             {petition.status}
                                         </span>
@@ -146,7 +147,8 @@ export default function AdminPetitionsPage() {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Initial Momentum (Status)</label>
-                                        <select name="status" defaultValue={editingPetition?.status || 'Open'} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                        <select name="status" defaultValue={editingPetition?.status || 'Pending'} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                            <option>Pending</option>
                                             <option>Open</option>
                                             <option>Won</option>
                                             <option>Closed</option>

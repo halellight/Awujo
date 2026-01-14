@@ -239,7 +239,7 @@ export default function DashboardPage() {
                                         <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
                                             <MapPin className="w-4 h-4 text-primary" />
                                         </div>
-                                        <div className="text-[11px] font-black uppercase tracking-widest">Hotspots</div>
+                                        <div className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Hotspots</div>
                                     </div>
                                     <div className="space-y-4">
                                         <HotspotItem label="Lagos" value="24" />

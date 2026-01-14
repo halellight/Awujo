@@ -1,0 +1,19 @@
+{
+  "probes": [
+    {
+      "target": "public.users",
+      "status": "FOUND & ACCESSIBLE"
+    },
+    {
+      "target": "auth.users",
+      "status": "FOUND & ACCESSIBLE"
+    },
+    {
+      "target": "public.profiles",
+      "status": "FOUND & ACCESSIBLE"
+    }
+  ],
+  "insertTest": {
+    "success": true
+  }
+}

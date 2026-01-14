@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import {
     MapPin, Calendar, Wallet, Landmark,
     ArrowLeft, MessageSquare, Image as ImageIcon,
-    Clock, Send, Trash2, ShieldCheck
+    Clock, Send, Trash2, ShieldCheck, ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -14,14 +14,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     const { id: projectId } = use(params);
     const [project, setProject] = useState<any>(null);
     const [updates, setUpdates] = useState<any[]>([]);
+    const [reports, setReports] = useState<any[]>([]);
     const [comments, setComments] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newComment, setNewComment] = useState("");
     const [userName, setUserName] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
-    // In a real app, this would be determined by auth
-    const isAdmin = false;
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.email === 'praiseibec@gmail.com') {
+                setIsAdmin(true);
+            }
+        };
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         async function fetchProjectData() {
@@ -45,7 +54,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
             if (updateData) setUpdates(updateData);
 
-            // 3. Fetch Comments
+            // 3. Fetch Published Reports
+            const { data: reportData } = await supabase
+                .from('project_reports')
+                .select('*')
+                .eq('project_id', projectId)
+                .eq('status', 'Published')
+                .order('created_at', { ascending: false });
+
+            if (reportData) setReports(reportData);
+
+            // 4. Fetch Comments
             const { data: commentData } = await supabase
                 .from('project_comments')
                 .select('*')
@@ -121,8 +140,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     </Link>
                     <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${project.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                project.status === 'Stalled' ? 'bg-red-50 text-red-600 border-red-100' :
-                                    'bg-blue-50 text-blue-600 border-blue-100'
+                            project.status === 'Stalled' ? 'bg-red-50 text-red-600 border-red-100' :
+                                'bg-blue-50 text-blue-600 border-blue-100'
                             }`}>
                             {project.status}
                         </span>
@@ -214,6 +233,60 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                                 ))
                             )}
                         </div>
+
+                        {/* Citizen Ground Reports */}
+                        {reports.length > 0 && (
+                            <div className="pt-12 space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                    <h2 className="text-xl font-heading font-black uppercase tracking-tight">Verified Citizen <span className="text-zinc-400 italic font-medium ml-2">Ground Truth.</span></h2>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {reports.map((report) => (
+                                        <div key={report.id} className="bg-emerald-50/30 border border-emerald-100 rounded-2xl overflow-hidden">
+                                            {report.evidence_url && (
+                                                <div className="aspect-video relative bg-zinc-100 border-b border-emerald-100">
+                                                    {(report.evidence_url.includes('supabase.co') || report.evidence_url.match(/\.(jpg|jpeg|png|webp|gif)$/i)) ? (
+                                                        <img
+                                                            src={report.evidence_url}
+                                                            alt="Ground evidence"
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-zinc-200 shadow-sm mb-3">
+                                                                <ImageIcon className="w-6 h-6 text-zinc-300" />
+                                                            </div>
+                                                            <a
+                                                                href={report.evidence_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-2"
+                                                            >
+                                                                View Digital Evidence <ExternalLink className="w-3 h-3" />
+                                                            </a>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div className="p-6">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Confirmed Report</div>
+                                                    <div className="text-[9px] font-bold text-zinc-400 uppercase">{new Date(report.created_at).toLocaleDateString()}</div>
+                                                </div>
+                                                <p className="text-zinc-700 text-sm font-medium leading-relaxed italic mb-4">
+                                                    "{report.report_content}"
+                                                </p>
+                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight">
+                                                    Transmitted by {report.submitter_name}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )
+                        }
                     </section>
                 </div>
 

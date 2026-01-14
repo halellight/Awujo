@@ -1,0 +1,30 @@
+[
+  {
+    "target": "users",
+    "status": "ACCESSIBLE"
+  },
+  {
+    "target": "public.users",
+    "status": "ACCESSIBLE"
+  },
+  {
+    "target": "auth.users",
+    "status": "ACCESSIBLE"
+  },
+  {
+    "target": "public.\"Users\"",
+    "status": "ACCESSIBLE"
+  },
+  {
+    "target": "\"Users\"",
+    "status": "ACCESSIBLE"
+  },
+  {
+    "target": "profiles",
+    "status": "ACCESSIBLE"
+  },
+  {
+    "target": "public.profiles",
+    "status": "ACCESSIBLE"
+  }
+]

@@ -4,12 +4,24 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users2, Search, Mail, MapPin, Landmark, Filter, Phone, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 export default function RepresentativesPage() {
     const [reps, setReps] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeState, setActiveState] = useState("All States");
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.email === 'praiseibec@gmail.com') {
+                setIsAdmin(true);
+            }
+        };
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         async function fetchReps() {
@@ -42,10 +54,20 @@ export default function RepresentativesPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8"
                     >
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
-                        Direct Accountability Pipeline
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+                            Direct Accountability Pipeline
+                        </div>
+                        {isAdmin && (
+                            <Link
+                                href="/admin/representatives"
+                                className="px-5 py-3 bg-zinc-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition-all shadow-xl"
+                            >
+                                <Landmark className="w-3.5 h-3.5" /> Manage Directory
+                            </Link>
+                        )}
                     </motion.div>
                     <h1 className="text-4xl md:text-6xl font-heading font-black text-foreground tracking-tight uppercase mb-4 leading-none">
                         Our <span className="text-primary italic">Representatives.</span>
@@ -81,11 +103,11 @@ export default function RepresentativesPage() {
                 </div>
 
                 {/* Reps Grid */}
-                <AnimatePresence mode="popLayout">
+                <div>
                     {filteredReps.length === 0 && !isLoading ? (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             className="bg-white border border-zinc-200 rounded-xl p-20 text-center col-span-full"
                         >
                             <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -97,16 +119,13 @@ export default function RepresentativesPage() {
                             </p>
                         </motion.div>
                     ) : (
-                        <motion.div
-                            layout
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                        >
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {filteredReps.map((rep, idx) => (
                                 <RepCard key={rep.id} rep={rep} idx={idx} />
                             ))}
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
+                </div>
             </div>
         </div>
     );
@@ -117,13 +136,12 @@ function RepCard({ rep, idx }: { rep: any, idx: number }) {
 
     return (
         <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: Math.min(idx * 0.05, 0.5) }}
             className={`bg-white border rounded-xl overflow-hidden group transition-all duration-300 flex flex-col ${isLeader
-                    ? 'border-primary/40 shadow-xl shadow-primary/5 ring-1 ring-primary/10'
-                    : 'border-zinc-200 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'
+                ? 'border-primary/40 shadow-xl shadow-primary/5 ring-1 ring-primary/10'
+                : 'border-zinc-200 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'
                 }`}
         >
             <div className="p-8">
@@ -137,8 +155,8 @@ function RepCard({ rep, idx }: { rep: any, idx: number }) {
                         )}
                     </div>
                     <span className={`px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-widest border ${isLeader
-                            ? 'bg-primary text-white border-primary shadow-sm'
-                            : 'bg-zinc-100 text-zinc-500 border-zinc-200'
+                        ? 'bg-primary text-white border-primary shadow-sm'
+                        : 'bg-zinc-100 text-zinc-500 border-zinc-200'
                         }`}>
                         {rep.role}
                     </span>
@@ -168,9 +186,12 @@ function RepCard({ rep, idx }: { rep: any, idx: number }) {
                     >
                         <Mail className="w-3 h-3" /> Send Briefing
                     </a>
-                    <button className="px-5 border border-zinc-200 rounded-lg flex items-center justify-center hover:bg-zinc-50 transition-colors">
+                    <Link
+                        href={`/representatives/${rep.id}`}
+                        className="px-5 border border-zinc-200 rounded-lg flex items-center justify-center hover:bg-zinc-50 transition-colors"
+                    >
                         <ArrowUpRight className="w-4 h-4 text-zinc-400" />
-                    </button>
+                    </Link>
                 </div>
             </div>
         </motion.div>

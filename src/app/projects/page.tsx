@@ -81,11 +81,11 @@ export default function ProjectsPage() {
                     </button>
                 </div>
 
-                <AnimatePresence mode="popLayout">
+                <div>
                     {filteredProjects.length === 0 && !isLoading ? (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             className="bg-white border border-zinc-200 rounded-xl p-20 text-center"
                         >
                             <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -97,16 +97,13 @@ export default function ProjectsPage() {
                             </p>
                         </motion.div>
                     ) : (
-                        <motion.div
-                            layout
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                        >
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {filteredProjects.map((project, idx) => (
                                 <ProjectCard key={project.id} project={project} idx={idx} />
                             ))}
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
+                </div>
             </div>
         </div>
     );
@@ -126,8 +123,7 @@ function ProjectCard({ project, idx }: { project: any, idx: number }) {
 
     return (
         <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: Math.min(idx * 0.05, 0.5) }}
             className="group bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500"
