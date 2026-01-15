@@ -17,6 +17,52 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Àwùjọ NG | Transparency in Governance",
   description: "A digital platform for tracking Nigerian budget performance, project implementation, and policy changes.",
+  metadataBase: new URL("https://awujo-ng.online"),
+  keywords: [
+    "Nigerian leaders",
+    "public officials",
+    "politics",
+    "government",
+    "ratings",
+    "news",
+    "share opinions",
+    "Nigerian politics",
+    "budget tracking",
+    "project implementation",
+  ],
+  authors: [
+    {
+      name: "Praise Ibe",
+      url: "https://awujo-ng.online",
+    },
+  ],
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  creator: "Praise Ibe",
+  openGraph: {
+    title: "Àwùjọ NG | Transparency in Governance",
+    description: "Tracking Nigerian budget performance, project implementation, and policy changes for a more transparent future.",
+    url: "https://awujo-ng.online",
+    siteName: "Àwùjọ",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Àwùjọ - Transparency in Governance",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Àwùjọ NG | Transparency in Governance",
+    description: "Tracking Nigerian budget performance, project implementation, and policy changes.",
+    images: ["/og-image.png"],
+  },
 };
 
 import { AuthProvider } from "@/lib/auth-context";
