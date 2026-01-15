@@ -109,6 +109,22 @@ export default function RepresentativeDetail({ params }: { params: Promise<{ id:
                             </div>
                         </section>
 
+                        {rep.committees && rep.committees.length > 0 && (
+                            <section className="bg-white border border-zinc-200 rounded-3xl p-8 md:p-12">
+                                <h2 className="text-sm font-heading font-black uppercase mb-8 text-zinc-400 flex items-center gap-2">
+                                    <Users2 className="w-4 h-4" /> Legislative Mandates
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {rep.committees.map((comm: any, i: number) => (
+                                        <div key={i} className="flex flex-col bg-zinc-50 border border-zinc-100 rounded-2xl p-6">
+                                            <span className="text-xs font-black uppercase text-zinc-500 tracking-widest mb-1">{comm.role}</span>
+                                            <span className="text-lg font-bold text-zinc-900 leading-tight">{comm.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         <section className="space-y-6">
                             <h2 className="text-lg font-heading font-black uppercase tracking-tight flex items-center gap-2">
                                 <BarChart3 className="w-4 h-4 text-primary" /> Performance Matrix

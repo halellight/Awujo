@@ -21,6 +21,7 @@ function AdminRepsContent() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRep, setEditingRep] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [committees, setCommittees] = useState<any[]>([]);
     const searchParams = useSearchParams();
     const editId = searchParams.get('edit');
 
@@ -38,6 +39,7 @@ function AdminRepsContent() {
                 const repToEdit = data.find(r => r.id === editId);
                 if (repToEdit) {
                     setEditingRep(repToEdit);
+                    setCommittees(repToEdit.committees || []);
                     setIsModalOpen(true);
                 }
             }
@@ -62,6 +64,7 @@ function AdminRepsContent() {
             citizen_engagement: formData.get('citizen_engagement') as string,
             assumed_office: formData.get('assumed_office') as string,
             legislative_priority: formData.get('legislative_priority') as string,
+            committees: committees,
         };
 
         let error;
@@ -82,6 +85,7 @@ function AdminRepsContent() {
             setIsModalOpen(true); // Keep open if you want? No, close it.
             setIsModalOpen(false);
             setEditingRep(null);
+            setCommittees([]);
         }
         setIsSubmitting(false);
     }
@@ -108,7 +112,7 @@ function AdminRepsContent() {
                     <p className="text-zinc-500 text-[11px] font-black uppercase tracking-widest">Maintain the national legislative accountability pipeline</p>
                 </div>
                 <button
-                    onClick={() => { setEditingRep(null); setIsModalOpen(true); }}
+                    onClick={() => { setEditingRep(null); setCommittees([]); setIsModalOpen(true); }}
                     className="w-full sm:w-auto bg-zinc-900 text-white px-6 py-4 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-zinc-800 transition-all shadow-lg"
                 >
                     <Plus className="w-4 h-4" /> Add Representative
@@ -151,7 +155,7 @@ function AdminRepsContent() {
                                     </td>
                                     <td className="px-6 py-6 text-right whitespace-nowrap">
                                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => { setEditingRep(rep); setIsModalOpen(true); }} className="p-2 bg-white border border-zinc-200 rounded text-zinc-600 hover:text-primary transition-all">
+                                            <button onClick={() => { setEditingRep(rep); setCommittees(rep.committees || []); setIsModalOpen(true); }} className="p-2 bg-white border border-zinc-200 rounded text-zinc-600 hover:text-primary transition-all">
                                                 <Edit2 className="w-3.5 h-3.5" />
                                             </button>
                                             <button onClick={() => deleteRep(rep.id)} className="p-2 bg-white border border-zinc-200 rounded text-zinc-600 hover:text-red-500 transition-all">
@@ -244,6 +248,60 @@ function AdminRepsContent() {
                                     <div className="space-y-2 md:col-span-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Legislative Priority</label>
                                         <textarea name="legislative_priority" rows={3} defaultValue={editingRep?.legislative_priority} className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none" />
+                                    </div>
+
+                                    <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-primary">Legislative Mandates (Committees)</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setCommittees([...committees, { name: "", role: "Member" }])}
+                                                className="text-[9px] font-black uppercase tracking-widest bg-zinc-100 px-3 py-1.5 rounded border border-zinc-200 hover:bg-zinc-200 transition-all flex items-center gap-2"
+                                            >
+                                                <Plus className="w-3 h-3" /> Add Mandate
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            {committees.map((comm, idx) => (
+                                                <div key={idx} className="flex gap-3 items-start bg-zinc-50 p-4 rounded-xl border border-zinc-100">
+                                                    <div className="flex-grow space-y-3">
+                                                        <input
+                                                            placeholder="Committee Name (e.g. Appropriations)"
+                                                            value={comm.name}
+                                                            onChange={(e) => {
+                                                                const next = [...committees];
+                                                                next[idx].name = e.target.value;
+                                                                setCommittees(next);
+                                                            }}
+                                                            className="w-full bg-white border border-zinc-200 rounded-lg px-4 py-2 text-[11px] font-bold outline-none focus:border-primary transition-all"
+                                                        />
+                                                        <input
+                                                            placeholder="Role (e.g. Chairman)"
+                                                            value={comm.role}
+                                                            onChange={(e) => {
+                                                                const next = [...committees];
+                                                                next[idx].role = e.target.value;
+                                                                setCommittees(next);
+                                                            }}
+                                                            className="w-full bg-white border border-zinc-200 rounded-lg px-4 py-2 text-[11px] font-bold outline-none focus:border-primary transition-all"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCommittees(committees.filter((_, i) => i !== idx))}
+                                                        className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {committees.length === 0 && (
+                                                <div className="text-center py-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">No mandates assigned</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 

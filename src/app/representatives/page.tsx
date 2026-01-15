@@ -177,6 +177,22 @@ function RepCard({ rep, idx }: { rep: any, idx: number }) {
                 <div className="space-y-4 mb-8">
                     <DetailRow icon={<MapPin className="w-3 h-3" />} label="Constituency" value={rep.constituency} />
                     <DetailRow icon={<Landmark className="w-3 h-3" />} label="State" value={rep.state} />
+
+                    {rep.committees && rep.committees.length > 0 && (
+                        <div className="pt-2">
+                            <div className="flex items-center gap-2 text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-2">
+                                <Users2 className="w-3 h-3" /> Legislative Mandates
+                            </div>
+                            <div className="space-y-2">
+                                {rep.committees.map((comm: any, i: number) => (
+                                    <div key={i} className="flex flex-col bg-zinc-50 border border-zinc-100 rounded-md p-2">
+                                        <span className="text-[10px] font-black uppercase text-zinc-900 leading-tight mb-1">{comm.name}</span>
+                                        <span className="text-[9px] font-bold uppercase text-primary tracking-wider">{comm.role}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="mt-auto pt-6 border-t border-zinc-50 flex gap-4">

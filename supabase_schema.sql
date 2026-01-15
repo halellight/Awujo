@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS public.representatives (
     image_url TEXT,
     contact_email TEXT,
     phone TEXT, -- ADDED: phone column
+    committees JSONB DEFAULT '[]', -- ADDED: committees column to store roles like [{name: "...", role: "..."}]
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
