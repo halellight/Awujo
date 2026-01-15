@@ -49,13 +49,13 @@ export default function AdminDashboard() {
     }, []);
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-8 lg:space-y-12">
             <section>
-                <h1 className="text-3xl font-heading font-black uppercase tracking-tight mb-8">
+                <h1 className="text-2xl lg:text-3xl font-heading font-black uppercase tracking-tight mb-6 lg:mb-8">
                     Ops <span className="text-primary italic">Overview.</span>
                 </h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                     <AdminStat
                         icon={<FileText className="text-amber-500" />}
                         label="Pending Reports"
@@ -80,10 +80,10 @@ export default function AdminDashboard() {
                 </div>
             </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12">
                 <section>
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-heading font-black uppercase tracking-tight flex items-center gap-2">
+                        <h2 className="text-base lg:text-lg font-heading font-black uppercase tracking-tight flex items-center gap-2">
                             <Clock className="w-4 h-4 text-zinc-400" /> Recent Intelligence
                         </h2>
                         <Link href="/admin/reports" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
@@ -93,13 +93,13 @@ export default function AdminDashboard() {
 
                     <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
                         {stats.recentSubmissions.length === 0 ? (
-                            <div className="p-12 text-center">
+                            <div className="p-8 lg:p-12 text-center">
                                 <p className="text-zinc-400 text-xs font-medium uppercase tracking-widest">No pending reports detected.</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-zinc-100">
                                 {stats.recentSubmissions.map((report) => (
-                                    <div key={report.id} className="p-6 hover:bg-zinc-50 transition-colors group">
+                                    <div key={report.id} className="p-4 lg:p-6 hover:bg-zinc-50 transition-colors group">
                                         <div className="flex justify-between items-start mb-2">
                                             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{report.submitter_name}</span>
                                             <span className="px-2 py-0.5 rounded-sm bg-amber-50 text-amber-600 border border-amber-100 text-[8px] font-black uppercase tracking-widest">Pending</span>
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
 
                 <section>
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-heading font-black uppercase tracking-tight flex items-center gap-2">
+                        <h2 className="text-base lg:text-lg font-heading font-black uppercase tracking-tight flex items-center gap-2">
                             <AlertCircle className="w-4 h-4 text-zinc-400" /> Quick Actions
                         </h2>
                     </div>

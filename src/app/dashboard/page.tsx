@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { BarChart3, TrendingUp, AlertTriangle, CheckCircle2, Wallet, Landmark, MapPin, Loader2, MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
     const [stats, setStats] = useState({
@@ -76,28 +77,28 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-zinc-50 pb-20">
             {/* Header */}
-            <section className="bg-white border-b border-zinc-200 pt-20 pb-16">
+            <section className="bg-white border-b border-zinc-200 pt-16 lg:pt-20 pb-12 lg:pb-16">
                 <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-8"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6 lg:mb-8"
                     >
                         <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
                         System-Wide Intelligence
                     </motion.div>
-                    <h1 className="text-4xl md:text-6xl font-heading font-black text-foreground tracking-tight uppercase mb-4 leading-none">
+                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-heading font-black text-foreground tracking-tight uppercase mb-4 leading-none">
                         Live <span className="text-primary italic">Dashboard.</span>
                     </h1>
-                    <p className="text-zinc-500 text-sm md:text-base max-w-2xl font-medium leading-relaxed">
+                    <p className="text-zinc-500 text-xs md:text-sm lg:text-base max-w-2xl font-medium leading-relaxed">
                         High-fidelity analytics of the Nigerian federation. Monitor budget health, implementation velocity, and transparency metrics in real-time.
                     </p>
                 </div>
             </section>
 
-            <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 mt-12">
+            <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 mt-8 lg:mt-12">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center p-32 gap-6">
+                    <div className="flex flex-col items-center justify-center p-20 lg:p-32 gap-6">
                         <Loader2 className="w-10 h-10 text-primary animate-spin" />
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400">Synchronizing Federation Data...</span>
                     </div>
@@ -107,7 +108,7 @@ export default function DashboardPage() {
                             variants={container}
                             initial="hidden"
                             animate="show"
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12"
                         >
                             <DashboardStat
                                 icon={<Wallet className="w-5 h-5" />}
@@ -135,14 +136,14 @@ export default function DashboardPage() {
                             />
                         </motion.div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                            <div className="lg:col-span-2 space-y-12">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+                            <div className="lg:col-span-2 space-y-8 lg:space-y-12">
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white border border-zinc-200 rounded-xl p-8 md:p-10 shadow-sm"
+                                    className="bg-white border border-zinc-200 rounded-xl p-6 lg:p-10 shadow-sm"
                                 >
-                                    <h3 className="text-xl font-heading font-black uppercase mb-10 flex items-center gap-2 tracking-tight">
+                                    <h3 className="text-lg lg:text-xl font-heading font-black uppercase mb-8 lg:mb-10 flex items-center gap-2 tracking-tight">
                                         <BarChart3 className="w-5 h-5 text-primary" /> Initiation Velocity
                                     </h3>
                                     <div className="h-48 md:h-64 flex items-end gap-2 md:gap-3 px-2">
@@ -152,7 +153,7 @@ export default function DashboardPage() {
                                                 initial={{ height: 0 }}
                                                 animate={{ height: `${Math.max(h, 5)}%` }}
                                                 transition={{ delay: 0.5 + (i * 0.05), duration: 0.8, ease: "easeOut" }}
-                                                className="flex-grow bg-zinc-100 rounded-t-lg hover:bg-primary transition-all cursor-help group relative min-w-[20px]"
+                                                className="flex-grow bg-zinc-100 rounded-t-lg hover:bg-primary transition-all cursor-help group relative min-w-[15px] sm:min-w-[20px]"
                                             >
                                                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[10px] py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black uppercase shadow-xl z-10 border border-white/10">
                                                     Month -{5 - i}: {Math.round((h / 100) * (stats.totalProjects || 10))} Projects
@@ -170,25 +171,25 @@ export default function DashboardPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.2 }}
-                                    className="bg-white border border-zinc-200 rounded-xl p-8 md:p-10"
+                                    className="bg-white border border-zinc-200 rounded-xl p-6 lg:p-10"
                                 >
-                                    <h3 className="text-xl font-heading font-black uppercase mb-10 flex items-center gap-2">
+                                    <h3 className="text-lg lg:text-xl font-heading font-black uppercase mb-8 lg:mb-10 flex items-center gap-2">
                                         <MessageSquare className="w-5 h-5 text-primary" /> Recent Intelligence
                                     </h3>
                                     <div className="space-y-6">
                                         {recentReports.map((report, idx) => (
-                                            <div key={report.id} className="flex gap-6 pb-6 border-b border-zinc-50 last:border-0 last:pb-0 group">
-                                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center text-[10px] font-black text-zinc-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                            <div key={report.id} className="flex gap-4 lg:gap-6 pb-6 border-b border-zinc-50 last:border-0 last:pb-0 group">
+                                                <div className="flex-shrink-0 w-8 lg:w-10 h-8 lg:h-10 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center text-[10px] font-black text-zinc-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                                                     {idx + 1}
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <div className="text-[13px] font-black text-zinc-900 uppercase tracking-tight">{report.projects?.title}</div>
-                                                    <div className="text-[11px] font-medium text-zinc-500 line-clamp-1">{report.report_content}</div>
+                                                    <div className="text-[12px] lg:text-[13px] font-black text-zinc-900 uppercase tracking-tight">{report.projects?.title}</div>
+                                                    <div className="text-[10px] lg:text-[11px] font-medium text-zinc-500 line-clamp-1">{report.report_content}</div>
                                                     <div className="flex items-center gap-3 pt-1">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${report.status === 'Pending' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                        <span className={`text-[8px] lg:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${report.status === 'Pending' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                                             {report.status}
                                                         </span>
-                                                        <span className="text-[9px] font-bold text-zinc-300 uppercase tracking-widest">
+                                                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-300 uppercase tracking-widest">
                                                             {new Date(report.created_at).toLocaleDateString()}
                                                         </span>
                                                     </div>
@@ -203,9 +204,9 @@ export default function DashboardPage() {
                                 <motion.div
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="bg-white border border-zinc-200 rounded-xl p-8 shadow-sm"
+                                    className="bg-white border border-zinc-200 rounded-xl p-6 lg:p-8 shadow-sm"
                                 >
-                                    <h3 className="text-lg font-heading font-black uppercase mb-8 tracking-tight">Status Distribution</h3>
+                                    <h3 className="text-base lg:text-lg font-heading font-black uppercase mb-6 lg:mb-8 tracking-tight">Status Distribution</h3>
                                     <div className="space-y-6">
                                         <StatusItem icon={<CheckCircle2 className="text-emerald-500" />} label="Completed" value={stats.completedProjects} total={stats.totalProjects} color="bg-emerald-500" />
                                         <StatusItem icon={<TrendingUp className="text-blue-500" />} label="In Progress" value={stats.totalProjects - stats.completedProjects - stats.stalledProjects} total={stats.totalProjects} color="bg-blue-500" />
@@ -217,16 +218,18 @@ export default function DashboardPage() {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.2 }}
-                                    className="bg-primary text-white rounded-xl p-10 shadow-2xl relative overflow-hidden group"
+                                    className="bg-primary text-white rounded-xl p-8 lg:p-10 shadow-2xl relative overflow-hidden group"
                                 >
-                                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                                        <ShieldCheckIcon className="w-24 h-24" />
+                                    <div className="absolute top-0 right-0 p-8 lg:p-10 opacity-10 group-hover:scale-110 transition-transform">
+                                        <ShieldCheckIcon className="w-16 lg:w-24 h-16 lg:h-24" />
                                     </div>
-                                    <h3 className="text-xl font-heading font-black uppercase mb-4 relative z-10">Policy Alert</h3>
-                                    <p className="text-white/70 text-[13px] font-medium leading-relaxed mb-8 relative z-10">New infrastructure guidelines issued by FEC. All projects above ₦5B now require citizen auditing.</p>
-                                    <button className="w-full bg-white text-primary py-4 rounded-lg text-[11px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all hover:shadow-xl active:scale-95 relative z-10">
-                                        Read Protocol
-                                    </button>
+                                    <h3 className="text-lg lg:text-xl font-heading font-black uppercase mb-4 relative z-10">Policy Alert</h3>
+                                    <p className="text-white/70 text-[12px] lg:text-[13px] font-medium leading-relaxed mb-8 relative z-10">New infrastructure guidelines issued by FEC. All projects above ₦5B now require citizen auditing.</p>
+                                    <Link href="/policies">
+                                        <button className="w-full bg-white text-primary py-4 rounded-lg text-[11px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all hover:shadow-xl active:scale-95 relative z-10">
+                                            Read Protocol
+                                        </button>
+                                    </Link>
                                 </motion.div>
 
                                 <motion.div

@@ -80,7 +80,7 @@ export default function AdminReportsPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-3xl font-heading font-black uppercase tracking-tight mb-2">
+                <h1 className="text-2xl lg:text-3xl font-heading font-black uppercase tracking-tight mb-2">
                     Intelligence <span className="text-primary italic">Moderation.</span>
                 </h1>
                 <p className="text-zinc-500 text-[11px] font-black uppercase tracking-widest">Verify and authorize citizen ground truth</p>

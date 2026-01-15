@@ -92,16 +92,16 @@ function AdminPoliciesContent() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
                 <div>
-                    <h1 className="text-3xl font-heading font-black uppercase tracking-tight mb-2">
+                    <h1 className="text-2xl lg:text-3xl font-heading font-black uppercase tracking-tight mb-2">
                         Policy <span className="text-primary italic">Desk.</span>
                     </h1>
                     <p className="text-zinc-500 text-[11px] font-black uppercase tracking-widest">National policy & gazette management</p>
                 </div>
                 <button
                     onClick={() => { setEditingPolicy(null); setIsModalOpen(true); }}
-                    className="bg-zinc-900 text-white px-6 py-4 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-zinc-800 transition-all shadow-lg"
+                    className="w-full sm:w-auto bg-zinc-900 text-white px-6 py-4 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-zinc-800 transition-all shadow-lg"
                 >
                     <Plus className="w-4 h-4" /> Issue Directive
                 </button>
